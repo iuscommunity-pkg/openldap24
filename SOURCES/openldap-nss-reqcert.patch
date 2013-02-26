@@ -1,0 +1,80 @@
+fix: ldapsearch fails if no CA certificate is available
+
+    OpenLDAP built with OpenSSL allows most any value of cacertdir - directory
+    is a file, directory does not contain any CA certs, directory does not
+    exist - users expect if they specify TLS_REQCERT=never, no matter what
+    the TLS_CACERTDIR setting is, TLS/SSL will just work.
+    TLS_CACERT, on the other hand, is a hard error.  Even if TLS_REQCERT=never,
+    if TLS_CACERT is specified and is not a valid CA cert file, TLS/SSL will
+    fail.  This patch makes CACERT errors hard errors, and makes CACERTDIR
+    errors "soft" errors.  The code checks CACERT first and, even though
+    the function will return an error, checks CACERTDIR anyway so that if the
+    user sets TRACE mode they will get CACERTDIR processing messages.
+
+Author: Rich Megginson <rmeggins@redhat.com>
+Upstream ITS: #6975
+Upstream commit: 7e528ae8022664b550410cdbe23690719d1a66a7
+Resolves: #713525
+
+diff --git a/libraries/libldap/tls_m.c b/libraries/libldap/tls_m.c
+index 911885d..7be703b 100644
+--- a/libraries/libldap/tls_m.c
++++ b/libraries/libldap/tls_m.c
+@@ -1320,7 +1320,7 @@ static int
+ tlsm_init_ca_certs( tlsm_ctx *ctx, const char *cacertfile, const char *cacertdir )
+ {
+ 	PRBool isca = PR_TRUE;
+-	PRStatus status = PR_FAILURE;
++	PRStatus status = PR_SUCCESS;
+ 	PRErrorCode errcode = PR_SUCCESS;
+ 
+ 	if ( !cacertfile && !cacertdir ) {
+@@ -1336,14 +1336,24 @@ tlsm_init_ca_certs( tlsm_ctx *ctx, const char *cacertfile, const char *cacertdir
+ 				   "TLS: %s is not a valid CA certificate file - error %d:%s.\n",
+ 				   cacertfile, errcode,
+ 				   PR_ErrorToString( errcode, PR_LANGUAGE_I_DEFAULT ) );
++			/* failure with cacertfile is a hard failure even if cacertdir is
++			   also specified and contains valid CA cert files */
++			status = PR_FAILURE;
+ 		} else {
+ 			Debug( LDAP_DEBUG_TRACE,
+ 				   "TLS: loaded CA certificate file %s.\n",
+ 				   cacertfile, 0, 0 );
+-			status = PR_SUCCESS; /* have at least one good CA - we can proceed */
+ 		}
+ 	}
+ 
++	/* if cacertfile above failed, we will return failure, even
++	   if there is a valid CA cert in cacertdir - but we still
++	   process cacertdir in case the user has enabled trace level
++	   debugging so they can see the processing for cacertdir too */
++	/* any cacertdir failures are "soft" failures - if the user specifies
++	   no cert checking, then we allow the tls/ssl to continue, no matter
++	   what was specified for cacertdir, or the contents of the directory
++	   - this is different behavior than that of cacertfile */
+ 	if ( cacertdir ) {
+ 		PRFileInfo fi;
+ 		PRDir *dir;
+@@ -1397,7 +1407,6 @@ tlsm_init_ca_certs( tlsm_ctx *ctx, const char *cacertfile, const char *cacertdir
+ 					Debug( LDAP_DEBUG_TRACE,
+ 						   "TLS: loaded CA certificate file %s from CA certificate directory %s.\n",
+ 						   fullpath, cacertdir, 0 );
+-					status = PR_SUCCESS; /* found at least 1 valid CA file in the dir */
+ 				} else {
+ 					errcode = PR_GetError();
+ 					Debug( LDAP_DEBUG_TRACE,
+@@ -1412,14 +1421,6 @@ tlsm_init_ca_certs( tlsm_ctx *ctx, const char *cacertfile, const char *cacertdir
+ 	}
+ done:
+ 	if ( status != PR_SUCCESS ) {
+-		const char *fmtstr = NULL;
+-		if ( cacertfile && cacertdir ) {
+-			fmtstr = "TLS: did not find any valid CA certificates in %s or %s\n";
+-		} else {
+-			fmtstr = "TLS: did not find any valid CA certificates in %s%s\n";
+-		}
+-		Debug( LDAP_DEBUG_ANY, fmtstr, cacertdir ? cacertdir : "",
+-			   cacertfile ? cacertfile : "", 0 );
+ 		return -1;
+ 	}
+ 

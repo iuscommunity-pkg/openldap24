@@ -1,0 +1,17 @@
+matching wildcard hostnames in certificate Subject field does not work
+
+Upstream ITS: #7006
+Author: Philippe Kueck <hash_oldap@cycdolphin.net>
+Resolves: #726984
+
+--- openldap-2.4.23.orig/libraries/libldap/tls_m.c	2011-08-01 12:43:59.000000000 +0200
++++ openldap-2.4.23.orig/libraries/libldap/tls_m.c	2011-08-01 13:53:05.000000000 +0200
+@@ -2601,7 +2601,7 @@ 
+ 				if ( av->len == nlen && !strncasecmp( name, (char *)av->data, nlen )) {
+ 					ret = LDAP_SUCCESS;
+ 				} else if ( av->data[0] == '*' && av->data[1] == '.' &&
+-					domain && dlen == av->len - 1 && !strncasecmp( name,
++					domain && dlen == av->len - 1 && !strncasecmp( domain,
+ 						(char *)(av->data+1), dlen )) {
+ 					ret = LDAP_SUCCESS;
+ 				} else {

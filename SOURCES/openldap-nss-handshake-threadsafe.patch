@@ -1,0 +1,101 @@
+Use mutex for connection handshake when using PEM nss
+
+PEM nss is not thread safe when establishing the initial connection
+using SSL_ForceHandshake.  Create a new mutex - tlsm_pem_mutex - to
+protect this function call.
+The call to SSL_ConfigServerSessionIDCache() is not thread-safe - move it
+to the init section and protect it with the init mutex.
+
+Author: Rich Megginson <rmeggins@redhat.com>
+Resolves: #709407
+Upstream ITS: #7034
+---
+ libraries/libldap/tls_m.c |   30 ++++++++++++++++++++++++------
+ 1 files changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/libraries/libldap/tls_m.c b/libraries/libldap/tls_m.c
+index c85d322..9447db2 100644
+--- a/libraries/libldap/tls_m.c
++++ b/libraries/libldap/tls_m.c
+@@ -138,6 +138,7 @@ static int tlsm_init( void );
+    to wrap the mutex creation in a prcallonce
+ */
+ static ldap_pvt_thread_mutex_t tlsm_init_mutex;
++static ldap_pvt_thread_mutex_t tlsm_pem_mutex;
+ static PRCallOnceType tlsm_init_mutex_callonce = {0,0};
+ 
+ static PRStatus PR_CALLBACK
+@@ -149,6 +150,12 @@ tlsm_thr_init_callonce( void )
+ 		return PR_FAILURE;
+ 	}
+ 
++	if ( ldap_pvt_thread_mutex_init( &tlsm_pem_mutex ) ) {
++		Debug( LDAP_DEBUG_ANY,
++			   "TLS: could not create mutex for PEM module: %d\n", errno, 0, 0 );
++		return PR_FAILURE;
++	}
++
+ 	return PR_SUCCESS;
+ }
+ 
+@@ -1731,6 +1738,18 @@ tlsm_deferred_init( void *arg )
+ 				   errcode, PR_ErrorToString( errcode, PR_LANGUAGE_I_DEFAULT ), 0 );
+ 			return -1;
+ 		}
++
++		if  ( ctx->tc_is_server ) {
++#ifdef LDAP_R_COMPILE
++			ldap_pvt_thread_mutex_lock( &tlsm_init_mutex );
++#endif
++			/* 0 means use the defaults here */
++			SSL_ConfigServerSessionIDCache( 0, 0, 0, NULL );
++#ifdef LDAP_R_COMPILE
++			ldap_pvt_thread_mutex_unlock( &tlsm_init_mutex );
++#endif
++		}
++
+ #ifndef HAVE_NSS_INITCONTEXT
+ 	}
+ #endif /* HAVE_NSS_INITCONTEXT */
+@@ -1932,6 +1951,7 @@ tlsm_destroy( void )
+ {
+ #ifdef LDAP_R_COMPILE
+ 	ldap_pvt_thread_mutex_destroy( &tlsm_init_mutex );
++	ldap_pvt_thread_mutex_destroy( &tlsm_pem_mutex );
+ #endif
+ }
+ 
+@@ -2419,11 +2439,6 @@ tlsm_session_new ( tls_ctx * ctx, int is_server )
+ 		return NULL;
+ 	}
+ 
+-	if ( is_server ) {
+-		/* 0 means use the defaults here */
+-		SSL_ConfigServerSessionIDCache( 0, 0, 0, NULL );
+-	}
+-
+ 	rc = SSL_ResetHandshake( session, is_server );
+ 	if ( rc ) {
+ 		PRErrorCode err = PR_GetError();
+@@ -2443,9 +2458,20 @@ static int
+ tlsm_session_accept_or_connect( tls_session *session, int is_accept )
+ {
+ 	tlsm_session *s = (tlsm_session *)session;
+-	int rc = SSL_ForceHandshake( s );
++	int rc;
+ 	const char *op = is_accept ? "accept" : "connect";
+ 
++	if ( pem_module ) {
++#ifdef LDAP_R_COMPILE
++		ldap_pvt_thread_mutex_lock( &tlsm_pem_mutex );
++#endif
++	}
++	rc = SSL_ForceHandshake( s );
++	if ( pem_module ) {
++#ifdef LDAP_R_COMPILE
++		ldap_pvt_thread_mutex_unlock( &tlsm_pem_mutex );
++#endif
++	}
+ 	if ( rc ) {
+ 		PRErrorCode err = PR_GetError();
+ 		rc = -1;

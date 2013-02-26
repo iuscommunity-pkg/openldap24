@@ -1,0 +1,84 @@
+This workarounds Mozilla NSS bug. libldap crashes when TLS_CACERTDIR contains a subdirectory.
+Skip all non-file entries in CA_CERTDIR.
+
+Resolves: #652315
+Upstream ITS: #6703
+Author: Rich Megginson (rmeggins@redhat.com)
+
+diff -u -8 -r1.19 tls_m.c
+--- openldap.old/libraries/libldap/tls_m.c	29 Oct 2010 08:30:30 -0000	1.19
++++ openldap.new/libraries/libldap/tls_m.c	11 Nov 2010 20:18:20 -0000
+@@ -1011,16 +1011,36 @@
+ 	CK_ATTRIBUTE theTemplate[20];
+ 	CK_BBOOL cktrue = CK_TRUE;
+ 	CK_BBOOL ckfalse = CK_FALSE;
+ 	CK_OBJECT_CLASS objClass = CKO_CERTIFICATE;
+ 	char tmpslotname[64];
+ 	char *slotname = NULL;
+ 	const char *ptr = NULL;
+ 	char sep = PR_GetDirectorySeparator();
++	PRFileInfo fi;
++	PRStatus status;
++
++	memset( &fi, 0, sizeof(fi) );
++	status = PR_GetFileInfo( filename, &fi );
++	if ( PR_SUCCESS != status) {
++		PRErrorCode errcode = PR_GetError();
++		Debug( LDAP_DEBUG_ANY,
++			   "TLS: could not read certificate file %s - error %d:%s.\n",
++			   filename, errcode,
++			   PR_ErrorToString( errcode, PR_LANGUAGE_I_DEFAULT ) );
++		return -1;
++	}
++
++	if ( fi.type != PR_FILE_FILE ) {
++		Debug( LDAP_DEBUG_ANY,
++			   "TLS: error: the certificate file %s is not a file.\n",
++			   filename, 0 ,0 );
++		return -1;
++	}
+ 
+ 	attrs = theTemplate;
+ 
+ 	if ( isca ) {
+ 		slotID = 0; /* CA and trust objects use slot 0 */
+ 		PR_snprintf( tmpslotname, sizeof(tmpslotname), TLSM_PEM_TOKEN_FMT, slotID );
+ 		slotname = tmpslotname;
+ 	} else {
+@@ -1083,16 +1103,36 @@
+ 	CK_SLOT_ID slotID;
+ 	PK11SlotInfo * slot = NULL;
+ 	PK11GenericObject *rv;
+ 	CK_ATTRIBUTE *attrs;
+ 	CK_ATTRIBUTE theTemplate[20];
+ 	CK_BBOOL cktrue = CK_TRUE;
+ 	CK_OBJECT_CLASS objClass = CKO_PRIVATE_KEY;
+ 	int retcode = 0;
++	PRFileInfo fi;
++	PRStatus status;
++
++	memset( &fi, 0, sizeof(fi) );
++	status = PR_GetFileInfo( filename, &fi );
++	if ( PR_SUCCESS != status) {
++		PRErrorCode errcode = PR_GetError();
++		Debug( LDAP_DEBUG_ANY,
++			   "TLS: could not read key file %s - error %d:%s.\n",
++			   filename, errcode,
++			   PR_ErrorToString( errcode, PR_LANGUAGE_I_DEFAULT ) );
++		return -1;
++	}
++
++	if ( fi.type != PR_FILE_FILE ) {
++		Debug( LDAP_DEBUG_ANY,
++			   "TLS: error: the key file %s is not a file.\n",
++			   filename, 0 ,0 );
++		return -1;
++	}
+ 
+ 	attrs = theTemplate;
+ 
+ 	if ( ctx->tc_slotname == NULL ) { /* need new slot */
+ 		slotID = ++tlsm_slot_count;
+ 		ctx->tc_slotname = PR_smprintf( TLSM_PEM_TOKEN_FMT, slotID );
+ 	}
+ 	slot = PK11_FindSlotByName( ctx->tc_slotname );

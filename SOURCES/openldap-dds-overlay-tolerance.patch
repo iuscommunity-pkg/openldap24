@@ -1,0 +1,29 @@
+DDS overlay: fix TTL tolerance
+
+olcDDStolerance setting had inverse effect and in fact was shortening entries real TTL
+
+From cca0da2163f1ec83352d86015cf6b9b42b757dc7 Mon Sep 17 00:00:00 2001
+Author: Jan Vcelak <jvcelak@redhat.com>
+Upstream ITS: #7017
+Resolves: #723514
+
+---
+ servers/slapd/overlays/dds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/servers/slapd/overlays/dds.c b/servers/slapd/overlays/dds.c
+index 56d299f..661b309 100644
+--- a/servers/slapd/overlays/dds.c
++++ b/servers/slapd/overlays/dds.c
+@@ -156,7 +156,7 @@ dds_expire( void *ctx, dds_info_t *di )
+ 	op->ors_slimit = SLAP_NO_LIMIT;
+ 	op->ors_attrs = slap_anlist_no_attrs;
+ 
+-	expire = slap_get_time() + di->di_tolerance;
++	expire = slap_get_time() - di->di_tolerance;
+ 	ts.bv_val = tsbuf;
+ 	ts.bv_len = sizeof( tsbuf );
+ 	slap_timestamp( &expire, &ts );
+-- 
+1.7.6
+

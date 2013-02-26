@@ -1,0 +1,19 @@
+Segmentation fault of client tool when input LDIF line is splitted but not indented correctly.
+
+Author: Howard Chu <hyc@openldap.org>
+Upstream ITS: #6978
+Upstream commit: 4b057bc
+Resolves: #701227
+
+diff -uNPrp openldap-2.4.23/clients/tools/ldapmodify.c openldap-2.4.23.fix/clients/tools/ldapmodify.c
+--- openldap-2.4.23/clients/tools/ldapmodify.c	2010-04-16 00:16:50.000000000 +0200
++++ openldap-2.4.23.fix/clients/tools/ldapmodify.c	2011-07-18 16:32:19.889520779 +0200
+@@ -450,7 +450,7 @@ process_ldif_rec( char *rbuf, int linenu
+ 			fprintf( stderr, _("%s: invalid format (line %d) entry: \"%s\"\n"),
+ 				prog, linenum+i, dn == NULL ? "" : dn );
+ 			rc = LDAP_PARAM_ERROR;
+-			break;
++			goto leave;
+ 		}
+ 		freeval[i] = freev;
+ 

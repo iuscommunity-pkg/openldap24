@@ -1,0 +1,69 @@
+Openldap server in MirrorMode sometimes fails to resync via syncrepl
+
+Upstream ITS: #6641
+Upstream commit: c0aec23
+Resolves: #784211
+
+diff --git a/doc/man/man5/slapo-unique.5 b/doc/man/man5/slapo-unique.5
+index 7a3328e..85270d8 100644
+--- a/doc/man/man5/slapo-unique.5
++++ b/doc/man/man5/slapo-unique.5
+@@ -154,6 +154,12 @@ Typical attributes for the
+ .B ignore ldap:///...
+ URIs are intentionally not hardcoded into the overlay to allow for
+ maximum flexibility in meeting site-specific requirements.
++.LP
++Replication and operations with
++.B manageDsaIt
++control are allowed to bypass this enforcement. It is therefore important that
++all servers accepting writes have this overlay configured in order to maintain
++uniqueness in a replicated DIT.
+ .SH FILES
+ .TP
+ ETCDIR/slapd.conf
+diff --git a/servers/slapd/overlays/unique.c b/servers/slapd/overlays/unique.c
+index 845b24d..9fbb7c6 100644
+--- a/servers/slapd/overlays/unique.c
++++ b/servers/slapd/overlays/unique.c
+@@ -1069,6 +1069,13 @@ unique_add(
+ 	Debug(LDAP_DEBUG_TRACE, "==> unique_add <%s>\n",
+ 	      op->o_req_dn.bv_val, 0, 0);
+ 
++	/* skip the checks if the operation has manageDsaIt control in it
++	 * (for replication) */
++	if ( op->o_managedsait > SLAP_CONTROL_IGNORED ) {
++		Debug(LDAP_DEBUG_TRACE, "unique_add: administrative bypass, skipping\n", 0, 0, 0);
++		return rc;
++	}
++
+ 	for ( domain = legacy ? legacy : domains;
+ 	      domain;
+ 	      domain = domain->next )
+@@ -1190,6 +1197,13 @@ unique_modify(
+ 	Debug(LDAP_DEBUG_TRACE, "==> unique_modify <%s>\n",
+ 	      op->o_req_dn.bv_val, 0, 0);
+ 
++	/* skip the checks if the operation has manageDsaIt control in it
++	 * (for replication) */
++	if ( op->o_managedsait > SLAP_CONTROL_IGNORED ) {
++		Debug(LDAP_DEBUG_TRACE, "unique_modify: administrative bypass, skipping\n", 0, 0, 0);
++		return rc;
++	}
++
+ 	for ( domain = legacy ? legacy : domains;
+ 	      domain;
+ 	      domain = domain->next )
+@@ -1304,6 +1318,13 @@ unique_modrdn(
+ 	Debug(LDAP_DEBUG_TRACE, "==> unique_modrdn <%s> <%s>\n",
+ 		op->o_req_dn.bv_val, op->orr_newrdn.bv_val, 0);
+ 
++	/* skip the checks if the operation has manageDsaIt control in it
++	 * (for replication) */
++	if ( op->o_managedsait > SLAP_CONTROL_IGNORED ) {
++		Debug(LDAP_DEBUG_TRACE, "unique_modrdn: administrative bypass, skipping\n", 0, 0, 0);
++		return rc;
++	}
++
+ 	for ( domain = legacy ? legacy : domains;
+ 	      domain;
+ 	      domain = domain->next )

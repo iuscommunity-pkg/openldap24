@@ -1,0 +1,40 @@
+MozNSS: free the return of tlsm_find_and_verify_cert_key
+
+If tlsm_find_and_verify_cert_key finds the cert and/or key, and it fails
+to verify them, it will leave them allocated for the caller to dispose of.
+There were a couple of places that were not disposing of the cert and key
+upon error.
+
+Author: Rich Megginson <rmeggins@redhat.com>
+Upstream ITS: #7001
+Upstream commit: fb4b4f7445d9392fbae097cc861e4cfb1694dcae
+Resolves: #729087
+
+diff --git a/libraries/libldap/tls_m.c b/libraries/libldap/tls_m.c
+index 7ae7d82..72fdf49 100644
+--- a/libraries/libldap/tls_m.c
++++ b/libraries/libldap/tls_m.c
+@@ -1811,6 +1811,14 @@ tlsm_get_client_auth_data( void *arg, PRFileDesc *fd,
+ 		Debug( LDAP_DEBUG_ANY,
+ 			   "TLS: error: unable to perform client certificate authentication for "
+ 			   "certificate named %s\n", ctx->tc_certname, 0, 0 );
++		if ( pRetKey && *pRetKey ) {
++			SECKEY_DestroyPrivateKey( *pRetKey );
++			*pRetKey = NULL;
++		}
++		if ( pRetCert && *pRetCert ) {
++			CERT_DestroyCertificate( *pRetCert );
++			*pRetCert = NULL;
++		}
+ 		return SECFailure;
+ 	}
+ 
+@@ -2162,6 +2170,8 @@ tlsm_deferred_ctx_init( void *arg )
+ 			Debug( LDAP_DEBUG_ANY, 
+ 			       "TLS: error: unable to find and verify server's cert and key for certificate %s\n",
+ 			       ctx->tc_certname, 0, 0 );
++			CERT_DestroyCertificate( serverCert );
++			SECKEY_DestroyPrivateKey( serverKey );
+ 			return -1;
+ 		}
+ 

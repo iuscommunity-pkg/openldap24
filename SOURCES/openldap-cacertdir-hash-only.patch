@@ -1,0 +1,60 @@
+Openldap should ignore files not in the openssl c_rehash format (hash.0) in TLS_CACERTDIR
+
+Resolves: #650288
+Upstream ITS: #6705
+Author: Rich Megginson (rmeggins@redhat.com)
+
+--- openldap.old/libraries/libldap/tls_m.c.2	2010-11-11 15:21:05.000000000 -0700
++++ openldap.new/libraries/libldap/tls_m.c	2010-11-11 15:29:08.000000000 -0700
+@@ -100,16 +100,19 @@
+ typedef PRFileDesc tlsm_session;
+ 
+ static PRDescIdentity	tlsm_layer_id;
+ 
+ static const PRIOMethods tlsm_PR_methods;
+ 
+ #define PEM_LIBRARY	"nsspem"
+ #define PEM_MODULE	"PEM"
++/* hash files for use with cacertdir have this file name suffix */
++#define PEM_CA_HASH_FILE_SUFFIX	".0"
++#define PEM_CA_HASH_FILE_SUFFIX_LEN 2
+ 
+ static SECMODModule *pem_module;
+ 
+ #define DEFAULT_TOKEN_NAME "default"
+ /* sprintf format used to create token name */
+ #define TLSM_PEM_TOKEN_FMT "PEM Token #%ld"
+ 
+ static int tlsm_slot_count;
+@@ -1230,18 +1233,29 @@
+ 				   "TLS: could not open the CA certificate directory %s - error %d:%s.\n",
+ 				   cacertdir, errcode,
+ 				   PR_ErrorToString( errcode, PR_LANGUAGE_I_DEFAULT ) );
+ 			goto done;
+ 		}
+ 
+ 		do {
+ 			entry = PR_ReadDir( dir, PR_SKIP_BOTH | PR_SKIP_HIDDEN );
+-			if ( NULL != entry ) {
+-				char *fullpath = PR_smprintf( "%s/%s", cacertdir, entry->name );
++			if ( ( NULL != entry ) && ( NULL != entry->name ) ) {
++				char *fullpath = NULL;
++				char *ptr;
++
++				ptr = PL_strrstr( entry->name, PEM_CA_HASH_FILE_SUFFIX );
++				if ( ( ptr == NULL ) || ( *(ptr + PEM_CA_HASH_FILE_SUFFIX_LEN) != '\0' ) ) {
++					Debug( LDAP_DEBUG_TRACE,
++						   "TLS: file %s does not end in [%s] - does not appear to be a CA certificate "
++						   "directory file with a properly hashed file name - skipping.\n",
++						   entry->name, PEM_CA_HASH_FILE_SUFFIX, 0 );
++					continue;
++				}
++				fullpath = PR_smprintf( "%s/%s", cacertdir, entry->name );
+ 				if ( !tlsm_add_cert_from_file( ctx, fullpath, isca ) ) {
+ 					Debug( LDAP_DEBUG_TRACE,
+ 						   "TLS: loaded CA certificate file %s from CA certificate directory %s.\n",
+ 						   fullpath, cacertdir, 0 );
+ 					status = PR_SUCCESS; /* found at least 1 valid CA file in the dir */
+ 				} else {
+ 					errcode = PR_GetError();
+ 					Debug( LDAP_DEBUG_TRACE,

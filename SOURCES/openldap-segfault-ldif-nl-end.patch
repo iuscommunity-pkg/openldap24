@@ -1,0 +1,30 @@
+Handle missing '\n' termination in LDIF input.
+
+Author: Jan Vcelak <jvcelak@redhat.com>
+Upstream ITS: #6947
+Upstream commit: 83814a2
+Resolves: #698921
+
+diff -uNPrp openldap-2.4.23/libraries/liblutil/ldif.c openldap-2.4.23.fix/libraries/liblutil/ldif.c
+--- openldap-2.4.23/libraries/liblutil/ldif.c	2010-04-13 22:23:06.000000000 +0200
++++ openldap-2.4.23.fix/libraries/liblutil/ldif.c	2011-07-18 16:23:05.653449686 +0200
+@@ -817,10 +817,16 @@ ldif_read_record(
+ 
+ 		if ( fgets( line, linesize, lfp->fp ) == NULL ) {
+ 			stop = 1;
+-			/* Add \n in case the file does not end with newline */
+-			line = "\n";
++			len = 0;
++		} else {
++			len = strlen( line );
++		}
++
++		if ( len == 0 || line[len-1] != '\n' ) {
++			/* Add \n in case the line/file does not end with newline */
++			line[len] = '\n';
++			line[++len] = '\0';
+ 		}
+-		len = strlen( line );
+ 
+ 		if ( last_ch == '\n' ) {
+ 			(*lno)++;

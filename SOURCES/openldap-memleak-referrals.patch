@@ -1,0 +1,34 @@
+fix: OpenLDAP library leaks memory when following referrals
+
+Resolves: #807363
+Upstream ITS: #6744
+Upstream commit: 518dd3a
+
+diff --git a/libraries/libldap/result.c b/libraries/libldap/result.c
+index 3fdf10d..0f08ca2 100644
+--- a/libraries/libldap/result.c
++++ b/libraries/libldap/result.c
+@@ -826,6 +826,7 @@ nextresp2:
+ 			Debug( LDAP_DEBUG_TRACE,
+ 				"read1msg:  mark request completed, ld %p msgid %d\n",
+ 				(void *)ld, lr->lr_msgid, 0);
++			tmplr = lr;
+ 			while ( lr->lr_parent != NULL ) {
+ 				merge_error_info( ld, lr->lr_parent, lr );
+ 
+@@ -834,6 +835,12 @@ nextresp2:
+ 					break;	/* not completely done yet */
+ 				}
+ 			}
++			/* ITS#6744: Original lr was refcounted when we retrieved it,
++			 * must release it now that we're working with the parent
++			 */
++			if ( tmplr->lr_parent ) {
++				ldap_return_request( ld, tmplr, 0 );
++			}
+ 
+ 			/* Check if all requests are finished, lr is now parent */
+ 			tmplr = lr;
+-- 
+1.7.1
+

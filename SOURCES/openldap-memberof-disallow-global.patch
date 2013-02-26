@@ -1,0 +1,28 @@
+Disallow memberof overlay setting on the frontend database.
+
+If this bug gets a resolution upstream, this patch should be replaced.
+
+Author: Jan Vcelak <jvcelak@redhat.com>
+Resolves: #730745
+Upstream ITS: #7249
+
+diff a/servers/slapd/overlays/memberof.c b/servers/slapd/overlays/memberof.c
+--- a/servers/slapd/overlays/memberof.c
++++ b/servers/slapd/overlays/memberof.c
+@@ -1517,6 +1517,16 @@ memberof_db_init(
+ 	slap_overinst	*on = (slap_overinst *)be->bd_info;
+ 	memberof_t		*mo;
+ 
++	if ( SLAP_ISGLOBALOVERLAY( be ) ) {
++		/* do not allow memberof to be a global overlay now */
++		if ( cr ){
++			snprintf( cr->msg, sizeof(cr->msg),
++				"memberof overlay cannot be global" );
++			Debug( LDAP_DEBUG_ANY, "%s\n", cr->msg, 0, 0 );
++		}
++		return 1;
++	}
++
+ 	mo = (memberof_t *)ch_calloc( 1, sizeof( memberof_t ) );
+ 
+ 	/* safe default */

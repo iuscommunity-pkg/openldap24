@@ -1,0 +1,20 @@
+DoS when submitting special MODRDN request
+
+Resolves: #680975 (tracker)
+Upstream ITS: #6768
+Upstream patch: http://www.openldap.org/devel/cvsweb.cgi/servers/slapd/modrdn.c.diff?r1=1.170.2.8&r2=1.170.2.9
+
+diff -uNPrp openldap-2.4.23/servers/slapd/modrdn.c openldap-2.4.23.fixed/servers/slapd/modrdn.c
+--- openldap-2.4.23/servers/slapd/modrdn.c	2010-06-10 19:48:07.000000000 +0200
++++ openldap-2.4.23.fixed/servers/slapd/modrdn.c	2011-03-01 11:53:49.625095480 +0100
+@@ -392,7 +392,9 @@ slap_modrdn2mods(
+ 	LDAPRDN		new_rdn = NULL;
+ 
+ 	assert( !BER_BVISEMPTY( &op->oq_modrdn.rs_newrdn ) );
+-	assert( !op->orr_deleteoldrdn || !BER_BVISEMPTY( &op->o_req_dn ) );
++
++	/* if requestDN is empty, silently reset deleteOldRDN */
++	if ( BER_BVISEMPTY( &op->o_req_dn ) ) op->orr_deleteoldrdn = 0;
+ 
+ 	if ( ldap_bv2rdn_x( &op->oq_modrdn.rs_newrdn, &new_rdn,
+ 		(char **)&rs->sr_text, LDAP_DN_FORMAT_LDAP, op->o_tmpmemctx ) ) {

@@ -1,0 +1,1478 @@
+man: add missing options to the client tools
+
+Summary of changes:
+ - typo in '-o' in --help output
+ - manpages all tools:
+   + add -o description (general options)
+   + add -N description (reverse DNS SASL host name canonicalization)
+   + reorder options to make it consistent accross all tools
+
+Upstream ITS: #7152 #7177
+Upstream commit: 35ee3c1 fd978eb
+Resolves: #745470
+
+diff --git a/doc/man/man1/ldapcompare.1 b/doc/man/man1/ldapcompare.1
+--- a/doc/man/man1/ldapcompare.1
++++ b/doc/man/man1/ldapcompare.1
+@@ -7,6 +7,10 @@ ldapcompare \- LDAP compare tool
+ .SH SYNOPSIS
+ .B ldapcompare
+ [\c
++.BR \-V [ V ]]
++[\c
++.BI \-d \ debuglevel\fR]
++[\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+@@ -15,7 +19,7 @@ ldapcompare \- LDAP compare tool
+ [\c
+ .BR \-M [ M ]]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -37,18 +41,20 @@ ldapcompare \- LDAP compare tool
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+@@ -77,6 +83,15 @@ TRUE, FALSE, or UNDEFINED on standard ou
+ .LP
+ .SH OPTIONS
+ .TP
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapcompare
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.TP
+ .B \-n
+ Show what would be done, but don't actually perform the compare.  Useful for
+ debugging in conjunction with \fB\-v\fP.
+@@ -93,11 +108,6 @@ Enable manage DSA IT control.
+ .B \-MM
+ makes control critical.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapcompare
+-must be compiled with LDAP_DEBUG defined for this option to have any effect.
+-.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -174,6 +184,15 @@ Search extensions:
+           rp[/<cookie>][/<slimit>]     (LDAP Sync refreshAndPersist)
+ .fi
+ .TP
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
++.TP
+ .BI \-O \ security-properties
+ Specify SASL security properties.
+ .TP
+@@ -184,6 +203,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+diff --git a/doc/man/man1/ldapdelete.1 b/doc/man/man1/ldapdelete.1
+--- a/doc/man/man1/ldapdelete.1	
++++ b/doc/man/man1/ldapdelete.1	
+@@ -7,17 +7,25 @@ ldapdelete \- LDAP delete entry tool
+ .SH SYNOPSIS
+ .B ldapdelete
+ [\c
++.BR \-V [ V ]]
++[\c
++.BI \-d \ debuglevel\fR]
++[\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+ [\c
+ .BR \-c ]
+ [\c
+-.BR \-M [ M ]]
++.BI \-f \ file\fR]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BR \-r ]
+ [\c
+-.BI \-f \ file\fR]
++.BI \-z \ sizelimit\fR]
++[\c
++.BR \-M [ M ]]
++[\c
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -31,34 +39,32 @@ ldapdelete \- LDAP delete entry tool
+ [\c
+ .BI \-h \ ldaphost\fR]
+ [\c
++.BI \-p \ ldapport\fR]
++[\c
+ .BR \-P \ { 2 \||\| 3 }]
+ [\c
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
+-.BI \-p \ ldapport\fR]
++.BI \-o \ opt \fR[= optparam \fR]]
+ [\c
+ .BI \-O \ security-properties\fR]
+ [\c
+-.BI \-U \ authcid\fR]
+-[\c
+-.BI \-R \ realm\fR]
++.BR \-I ]
+ [\c
+-.BR \-r ]
++.BR \-Q ]
+ [\c
+-.BR \-x ]
++.BR \-N ]
+ [\c
+-.BR \-I ]
++.BI \-U \ authcid\fR]
+ [\c
+-.BR \-Q ]
++.BI \-R \ realm\fR]
+ [\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+ [\c
+-.BI \-z \ sizelimit\fR]
+-[\c
+ .BR \-Z [ Z ]]
+ [\c
+ .IR DN \ [ ... ]]
+@@ -78,6 +84,15 @@ are provided, a list of DNs is read from
+ \fIfile\fP if the \fB\-f\fP flag is used).
+ .SH OPTIONS
+ .TP
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapdelete
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.TP
+ .B \-n
+ Show what would be done, but don't actually delete entries.  Useful for
+ debugging in conjunction with \fB\-v\fP.
+@@ -91,20 +106,26 @@ Continuous operation mode.  Errors  are 
+ will  continue  with  deletions.   The default is to exit after
+ reporting an error.
+ .TP
++.BI \-f \ file
++Read a series of DNs from \fIfile\fP, one per line, performing an
++LDAP delete for each.
++.TP
++.B \-r
++Do a recursive delete.  If the DN specified isn't a leaf, its
++children, and all their children are deleted down the tree.  No
++verification is done, so if you add this switch, ldapdelete will
++happily delete large portions of your tree.  Use with care.
++.TP
++.BI \-z \ sizelimit
++Use \fIsizelimit\fP when searching for children DN to delete,
++to circumvent any server-side size limit.  Only useful in conjunction
++with \fB\-r\fP.
++.TP
+ .BR \-M [ M ]
+ Enable manage DSA IT control.
+ .B \-MM
+ makes control critical.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapdelete
+-must be compiled with LDAP_DEBUG defined for this option to have any effect.
+-.TP
+-.BI \-f \ file
+-Read a series of DNs from \fIfile\fP, one per line, performing an
+-LDAP delete for each.
+-.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -169,16 +190,14 @@ Search extensions:
+           rp[/<cookie>][/<slimit>]     (LDAP Sync refreshAndPersist)
+ .fi
+ .TP
+-.B \-r
+-Do a recursive delete.  If the DN specified isn't a leaf, its
+-children, and all their children are deleted down the tree.  No
+-verification is done, so if you add this switch, ldapdelete will
+-happily delete large portions of your tree.  Use with care.
+-.TP
+-.BI \-z \ sizelimit
+-Use \fIsizelimit\fP when searching for children DN to delete,
+-to circumvent any server-side size limit.  Only useful in conjunction
+-with \fB\-r\fP.
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
+ .TP
+ .BI \-O \ security-properties
+ Specify SASL security properties.
+@@ -190,6 +209,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the identity depends on the
+ actual SASL mechanism used.
+diff --git a/doc/man/man1/ldapexop.1 b/doc/man/man1/ldapexop.1
+--- a/doc/man/man1/ldapexop.1
++++ b/doc/man/man1/ldapexop.1
+@@ -20,50 +20,50 @@ ldapexop \- issue LDAP extended operatio
+ .SH SYNOPSIS
+ ldapexop
+ [\c
+-.BI \-d \ level\fR]
++.BR \-V [ V ]]
+ [\c
+-.BI \-D \ binddn\fR]
++.BI \-d \ debuglevel\fR]
+ [\c
+-.BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
++.BR \-n ]
++[\c
++.BR \-v ]
+ [\c
+ .BI \-f \ file\fR]
+ [\c
+-.BI \-h \ host\fR]
++.BR \-x ]
+ [\c
+-.BI \-H \ URI\fR]
++.BI \-D \ binddn\fR]
+ [\c
+-.BR \-I ]
++.BR \-W ]
+ [\c
+-.BR \-n ]
++.BI \-w \ passwd\fR]
+ [\c
+-.BR \-N ]
++.BI \-y \ passwdfile\fR]
+ [\c
+-.BI \-O \ security-properties\fR]
++.BI \-H \ URI\fR]
+ [\c
+-.BI \-o \ opt\fR[\fP = optparam\fR]]
++.BI \-h \ ldaphost\fR]
+ [\c
+-.BI \-p \ port\fR]
++.BI \-p \ ldapport\fR]
+ [\c
+-.BR \-Q ]
++.BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
+-.BI \-R \ realm\fR]
++.BI \-o \ opt \fR[= optparam \fR]]
+ [\c
+-.BI \-U \ authcid\fR]
++.BI \-O \ security-properties\fR]
+ [\c
+-.BR \-v ]
++.BR \-I ]
+ [\c
+-.BR \-V ]
++.BR \-Q ]
+ [\c
+-.BI \-w \ passwd\fR]
++.BR \-N ]
+ [\c
+-.BR \-W ]
++.BI \-U \ authcid\fR]
+ [\c
+-.BR \-x ]
++.BI \-R \ realm\fR]
+ [\c
+ .BI \-X \ authzid\fR]
+ [\c
+-.BI \-y \ file\fR]
+-[\c
+ .BI \-Y \ mech\fR]
+ [\c
+ .BR \-Z [ Z ]]
+@@ -121,12 +121,53 @@ results in
+ 
+ .SH OPTIONS
+ .TP
+-.BI \-d \ level
+-Set the LDAP debugging level to \fIlevel\fP.
++.BI \-V [ V ]
++Print version info.
++If\fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.TP
++.BI \-n
++Show what would be done but don't actually do it.
++Useful for debugging in conjunction with \fB\-v\fP.
++.TP
++.BI \-v
++Run in verbose mode, with many diagnostics written to standard output.
++.TP
++.BI \-f \ file
++Read operations from \fIfile\fP.
++.TP
++.BI \-x
++Use simple authentication instead of SASL.
+ .TP
+ .BI \-D \ binddn
+ Use the Distinguished Name \fIbinddn\fP to bind to the LDAP directory.
+ .TP
++.BI \-W
++Prompt for simple authentication.
++This is used instead of specifying the password on the command line.
++.TP
++.BI \-w \ passwd
++Use \fIpasswd\fP as the password for simple authentication.
++.TP
++.BI \-y \ passwdfile
++Use complete contents of \fIpasswdfile\fP as the password for
++simple authentication.
++.TP
++.BI \-H \ URI
++Specify URI(s) referring to the ldap server(s); only the protocol/host/port
++fields are allowed; a list of URI, separated by whitespace or commas
++is expected.
++.TP
++.BI \-h \ ldaphost
++Specify the host on which the ldap server is running.
++Deprecated in favor of \fB\-H\fP.
++.TP
++.BI \-p \ ldapport
++Specify the TCP port where the ldap server is listening.
++Deprecated in favor of \fB\-H\fP.
++.TP
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+ Specify general extensions.  \'!\' indicates criticality.
+ .nf
+@@ -146,69 +187,35 @@ Specify general extensions.  \'!\' indic
+   not really controls)
+ .fi
+ .TP
+-.BI \-f \ file
+-Read operations from \fIfile\fP.
+-.TP
+-.BI \-h \ host
+-Specify the host on which the ldap server is running.
+-Deprecated in favor of \fB\-H\fP.
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
+ .TP
+-.BI \-H \ URI
+-Specify URI(s) referring to the ldap server(s); only the protocol/host/port
+-fields are allowed; a list of URI, separated by whitespace or commas
+-is expected.
++.BI \-O \ security-properties
++Specify SASL security properties.
+ .TP
+ .BI \-I
+ Enable SASL Interactive mode.  Always prompt.  Default is to prompt
+ only as needed.
+ .TP
+-.BI \-n
+-Show what would be done but don't actually do it.
+-Useful for debugging in conjunction with \fB\-v\fP.
+-.TP
+-.BI \-N
+-Do not use reverse DNS to canonicalize SASL host name.
+-.TP
+-.BI \-O \ security-properties
+-Specify SASL security properties.
+-.TP
+-.BI \-o \ opt\fR[\fP = optparam\fR]
+-Specify general options:
+-.nf
+-  nettimeout=<timeout> (in seconds, or "none" or "max")
+-.fi
+-.TP
+-.BI \-p \ port
+-Specify the TCP port where the ldap server is listening.
+-Deprecated in favor of \fB\-H\fP.
+-.TP
+ .BI \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
+-.BI \-R \ realm
+-Specify the realm of authentication ID for SASL bind. The form of the realm
+-depends on the actual SASL mechanism used.
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
+ .TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+ .TP
+-.BI \-v
+-Run in verbose mode, with many diagnostics written to standard output.
+-.TP
+-.BI \-V
+-Print version info and usage message.
+-If\fB\-VV\fP is given, only the version information is printed.
+-.TP
+-.BI \-w \ passwd
+-Use \fIpasswd\fP as the password for simple authentication.
+-.TP
+-.BI \-W
+-Prompt for simple authentication.
+-This is used instead of specifying the password on the command line.
+-.TP
+-.BI \-x
+-Use simple authentication instead of SASL.
++.BI \-R \ realm
++Specify the realm of authentication ID for SASL bind. The form of the realm
++depends on the actual SASL mechanism used.
+ .TP
+ .BI \-X \ authzid
+ Specify the requested authorization ID for SASL bind.
+@@ -218,10 +225,6 @@ must be one of the following formats:
+ or
+ .BI u: <username>
+ .TP
+-.BI \-y \ file
+-Use complete contents of \fIfile\fP as the password for
+-simple authentication.
+-.TP
+ .BI \-Y \ mech
+ Specify the SASL mechanism to be used for authentication.
+ Without this option, the program will choose the best mechanism the server knows.
+diff --git a/doc/man/man1/ldapmodify.1 b/doc/man/man1/ldapmodify.1
+--- a/doc/man/man1/ldapmodify.1
++++ b/doc/man/man1/ldapmodify.1
+@@ -7,19 +7,25 @@ ldapmodify, ldapadd \- LDAP modify entry
+ .SH SYNOPSIS
+ .B ldapmodify
+ [\c
+-.BR \-a ]
+-[\c
+-.BR \-c ]
++.BR \-V [ V ]]
+ [\c
+-.BI \-S \ file\fR]
++.BI \-d \ debuglevel\fR]
+ [\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+ [\c
++.BR \-a ]
++[\c
++.BR \-c ]
++[\c
++.BI \-f \ file\fR]
++[\c
++.BI \-S \ file\fR]
++[\c
+ .BR \-M [ M ]]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -41,39 +47,45 @@ ldapmodify, ldapadd \- LDAP modify entry
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+ [\c
+ .BR \-Z [ Z ]]
+-[\c
+-.BI \-f \ file\fR]
+ .LP
+ .B ldapadd
+ [\c
+-.BR \-c ]
++.BR \-V [ V ]]
+ [\c
+-.BI \-S \ file\fR]
++.BI \-d \ debuglevel\fR]
+ [\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+ [\c
++.BR \-c ]
++[\c
++.BI \-f \ file\fR]
++[\c
++.BI \-S \ file\fR]
++[\c
+ .BR \-M [ M ]]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -91,25 +103,29 @@ ldapmodify, ldapadd \- LDAP modify entry
+ [\c
+ .BR \-P \ { 2 \||\| 3 }]
+ [\c
++.BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
++[\c
++.BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
++[\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+ [\c
+ .BR \-Z [ Z ]]
+-[\c
+-.BI \-f \ file\fR]
+ .SH DESCRIPTION
+ .B ldapmodify
+ is a shell-accessible interface to the
+@@ -130,6 +146,22 @@ The entry information is read from stand
+ the use of the \fB\-f\fP option.
+ .SH OPTIONS
+ .TP
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapmodify
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.TP
++.B \-n
++Show what would be done, but don't actually modify entries.  Useful for
++debugging in conjunction with \fB\-v\fP.
++.TP
++.B \-v
++Use verbose mode, with many diagnostics written to standard output.
++.TP
+ .B \-a
+ Add new entries.  The default for
+ .B ldapmodify
+@@ -143,32 +175,20 @@ Continuous operation mode.  Errors are r
+ will continue with modifications.  The default is to exit after
+ reporting an error.
+ .TP
++.BI \-f \ file
++Read the entry modification information from \fIfile\fP instead of from
++standard input.
++.TP
+ .BI \-S \ file
+ Add or change records which where skipped due to an error are written to \fIfile\fP 
+ and the error message returned by the server is added as a comment. Most useful in 
+ conjunction with \fB\-c\fP.
+ .TP
+-.B \-n
+-Show what would be done, but don't actually modify entries.  Useful for
+-debugging in conjunction with \fB\-v\fP.
+-.TP
+-.B \-v
+-Use verbose mode, with many diagnostics written to standard output.
+-.TP
+ .BR \-M [ M ]
+ Enable manage DSA IT control.
+ .B \-MM
+ makes control critical.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapmodify
+-must be compiled with LDAP_DEBUG defined for this option to have any effect.
+-.TP
+-.BI \-f \ file
+-Read the entry modification information from \fIfile\fP instead of from
+-standard input.
+-.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -203,9 +223,6 @@ Deprecated in favor of \fB\-H\fP.
+ .BR \-P \ { 2 \||\| 3 }
+ Specify the LDAP protocol version to use.
+ .TP
+-.BI \-O \ security-properties
+-Specify SASL security properties.
+-.TP
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+ .TP
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+@@ -236,6 +253,18 @@ Search extensions:
+           rp[/<cookie>][/<slimit>]     (LDAP Sync refreshAndPersist)
+ .fi
+ .TP
++.BI \-o \ opt \fR[= optparam \fR]]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
++.TP
++.BI \-O \ security-properties
++Specify SASL security properties.
++.TP
+ .B \-I
+ Enable SASL Interactive mode.  Always prompt.  Default is to prompt
+ only as needed.
+@@ -243,6 +272,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+diff --git a/doc/man/man1/ldapmodrdn.1 b/doc/man/man1/ldapmodrdn.1
+--- a/doc/man/man1/ldapmodrdn.1
++++ b/doc/man/man1/ldapmodrdn.1
+@@ -7,19 +7,25 @@ ldapmodrdn \- LDAP rename entry tool
+ .SH SYNOPSIS
+ .B ldapmodrdn
+ [\c
+-.BR \-r ]
++.BR \-V [ V ]]
+ [\c
+-.BI \-s \ newsup\fR]
++.BI \-d \ debuglevel\fR]
+ [\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+ [\c
++.BR \-r ]
++[\c
++.BI \-s \ newsup\fR]
++[\c
+ .BR \-c ]
+ [\c
++.BI \-f \ file\fR]
++[\c
+ .BR \-M [ M ]]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -41,26 +47,26 @@ ldapmodrdn \- LDAP rename entry tool
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+ [\c
+ .BR \-Z [ Z ]]
+ [\c
+-.BI \-f \ file\fR]
+-[\c
+ .I dn  rdn\fR]
+ .SH DESCRIPTION
+ .B ldapmodrdn
+@@ -77,12 +83,14 @@ option, or from the command-line pair \f
+ \fIrdn\fP.
+ .SH OPTIONS
+ .TP
+-.B \-r
+-Remove old RDN values from the entry.  Default is to keep old values.
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
+ .TP
+-.BI \-s \ newsup
+-Specify a new superior entry. (I.e., move the target entry and make it a
+-child of the new superior.)  This option is not supported in LDAPv2.
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapmodrdn
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
+ .TP
+ .B \-n
+ Show what would be done, but don't actually change entries.  Useful for
+@@ -91,26 +99,27 @@ debugging in conjunction with \fB\-v\fP.
+ .B \-v
+ Use verbose mode, with many diagnostics written to standard output.
+ .TP
++.B \-r
++Remove old RDN values from the entry.  Default is to keep old values.
++.TP
++.BI \-s \ newsup
++Specify a new superior entry. (I.e., move the target entry and make it a
++child of the new superior.)  This option is not supported in LDAPv2.
++.TP
+ .B \-c
+ Continuous operation mode.  Errors  are  reported,  but ldapmodrdn
+ will  continue  with  modifications.   The default is to exit after
+ reporting an error.
+ .TP
++.BI \-f \ file
++Read the entry modification information from \fIfile\fP instead of from
++standard input or the command-line.
++.TP
+ .BR \-M [ M ]
+ Enable manage DSA IT control.
+ .B \-MM
+ makes control critical.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapmodrdn
+-must be
+-compiled with LDAP_DEBUG defined for this option to have any effect.
+-.TP
+-.BI \-f \ file
+-Read the entry modification information from \fIfile\fP instead of from
+-standard input or the command-line.
+-.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -145,9 +154,6 @@ Deprecated in favor of \fB\-H\fP.
+ .BR \-P \ { 2 \||\| 3 }
+ Specify the LDAP protocol version to use.
+ .TP
+-.BI \-O \ security-properties
+-Specify SASL security properties.
+-.TP
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+ .TP
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+@@ -178,6 +184,18 @@ Search extensions:
+           rp[/<cookie>][/<slimit>]     (LDAP Sync refreshAndPersist)
+ .fi
+ .TP
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
++.TP
++.BI \-O \ security-properties
++Specify SASL security properties.
++.TP
+ .B \-I
+ Enable SASL Interactive mode.  Always prompt.  Default is to prompt
+ only as needed.
+@@ -185,6 +203,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+diff --git a/doc/man/man1/ldappasswd.1 b/doc/man/man1/ldappasswd.1
+--- a/doc/man/man1/ldappasswd.1
++++ b/doc/man/man1/ldappasswd.1
+@@ -7,23 +7,19 @@ ldappasswd \- change the password of an 
+ .SH SYNOPSIS
+ .B ldappasswd
+ [\c
+-.BR \-A ]
+-[\c
+-.BI \-a \ oldPasswd\fR]
+-[\c
+-.BI \-t \ oldpasswdfile\fR]
+-[\c
+-.BI \-D \ binddn\fR]
++.BR \-V [ V ]]
+ [\c
+ .BI \-d \ debuglevel\fR]
+ [\c
+-.BI \-H \ ldapuri\fR]
++.BR \-n ]
+ [\c
+-.BI \-h \ ldaphost\fR]
++.BR \-v ]
+ [\c
+-.BR \-n ]
++.BR \-A ]
+ [\c
+-.BI \-p \ ldapport\fR]
++.BI \-a \ oldPasswd\fR]
++[\c
++.BI \-t \ oldpasswdfile\fR]
+ [\c
+ .BR \-S ]
+ [\c
+@@ -31,7 +27,9 @@ ldappasswd \- change the password of an 
+ [\c
+ .BI \-T \ newpasswdfile\fR]
+ [\c
+-.BR \-v ]
++.BR \-x ]
++[\c
++.BI \-D \ binddn\fR]
+ [\c
+ .BR \-W ]
+ [\c
+@@ -39,18 +37,30 @@ ldappasswd \- change the password of an 
+ [\c
+ .BI \-y \ passwdfile\fR]
+ [\c
++.BI \-H \ ldapuri\fR]
++[\c
++.BI \-h \ ldaphost\fR]
++[\c
++.BI \-p \ ldapport\fR]
++[\c
++.BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
++[\c
++.BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
++[\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+@@ -79,45 +89,32 @@ is neither designed nor intended to be a
+ and should not be installed as such.
+ .SH OPTIONS
+ .TP
+-.BI \-A
+-Prompt for old password.
+-This is used instead of specifying the password on the command line.
+-.TP
+-.BI \-a \ oldPasswd
+-Set the old password to \fIoldPasswd\fP.
+-.TP
+-.BI \-t \ oldPasswdFile
+-Set the old password to the contents of \fIoldPasswdFile\fP.
+-.TP
+-.B \-x 
+-Use simple authentication instead of SASL.
+-.TP
+-.BI \-D \ binddn
+-Use the Distinguished Name \fIbinddn\fP to bind to the LDAP directory.
+-For SASL binds, the server is expected to ignore this value.
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
+ .TP
+ .BI \-d \ debuglevel
+ Set the LDAP debugging level to \fIdebuglevel\fP.
+ .B ldappasswd
+ must be compiled with LDAP_DEBUG defined for this option to have any effect.
+ .TP
+-.BI \-H \ ldapuri
+-Specify URI(s) referring to the ldap server(s); only the protocol/host/port
+-fields are allowed; a list of URI, separated by whitespace or commas
+-is expected.
+-.TP
+-.BI \-h \ ldaphost
+-Specify an alternate host on which the ldap server is running.
+-Deprecated in favor of \fB\-H\fP.
+-.TP
+-.BI \-p \ ldapport
+-Specify an alternate TCP port where the ldap server is listening.
+-Deprecated in favor of \fB\-H\fP.
+-.TP
+ .B \-n
+ Do not set password. (Can be useful when used in conjunction with
+ \fB\-v\fP or \fB\-d\fP)
+ .TP
++.B \-v
++Increase the verbosity of output.  Can be specified multiple times.
++.TP
++.BI \-A
++Prompt for old password.
++This is used instead of specifying the password on the command line.
++.TP
++.BI \-a \ oldPasswd
++Set the old password to \fIoldPasswd\fP.
++.TP
++.BI \-t \ oldPasswdFile
++Set the old password to the contents of \fIoldPasswdFile\fP.
++.TP
+ .BI \-S
+ Prompt for new password.
+ This is used instead of specifying the password on the command line.
+@@ -128,8 +125,12 @@ Set the new password to \fInewPasswd\fP.
+ .BI \-T \ newPasswdFile
+ Set the new password to the contents of \fInewPasswdFile\fP.
+ .TP
+-.B \-v
+-Increase the verbosity of output.  Can be specified multiple times.
++.B \-x 
++Use simple authentication instead of SASL.
++.TP
++.BI \-D \ binddn
++Use the Distinguished Name \fIbinddn\fP to bind to the LDAP directory.
++For SASL binds, the server is expected to ignore this value.
+ .TP
+ .BI \-W
+ Prompt for bind password.
+@@ -142,6 +143,28 @@ Use \fIpasswd\fP as the password to bind
+ Use complete contents of \fIpasswdfile\fP as the password for
+ simple authentication.
+ .TP
++.BI \-H \ ldapuri
++Specify URI(s) referring to the ldap server(s); only the protocol/host/port
++fields are allowed; a list of URI, separated by whitespace or commas
++is expected.
++.TP
++.BI \-h \ ldaphost
++Specify an alternate host on which the ldap server is running.
++Deprecated in favor of \fB\-H\fP.
++.TP
++.BI \-p \ ldapport
++Specify an alternate TCP port where the ldap server is listening.
++Deprecated in favor of \fB\-H\fP.
++.TP
++.BI \-o \ opt \fR[= optparam \fR]]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
++.TP
+ .BI \-O \ security-properties
+ Specify SASL security properties.
+ .TP
+@@ -152,6 +175,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+diff --git a/doc/man/man1/ldapsearch.1 b/doc/man/man1/ldapsearch.1
+--- a/doc/man/man1/ldapsearch.1
++++ b/doc/man/man1/ldapsearch.1
+@@ -7,14 +7,18 @@ ldapsearch \- LDAP search tool
+ .SH SYNOPSIS
+ .B ldapsearch
+ [\c
++.BR \-V [ V ]]
++[\c
++.BI \-d \ debuglevel\fR]
++[\c
+ .BR \-n ]
+ [\c
++.BR \-v ]
++[\c
+ .BR \-c ]
+ [\c
+ .BR \-u ]
+ [\c
+-.BR \-v ]
+-[\c
+ .BR \-t [ t ]]
+ [\c
+ .BI \-T \ path\fR]
+@@ -25,14 +29,22 @@ ldapsearch \- LDAP search tool
+ [\c
+ .BR \-L [ L [ L ]]]
+ [\c
+-.BR \-M [ M ]]
+-[\c
+ .BI \-S \ attribute\fR]
+ [\c
+-.BI \-d \ debuglevel\fR]
++.BI \-b \ searchbase\fR]
++[\c
++.BR \-s \ { base \||\| one \||\| sub \||\| children }]
++[\c
++.BR \-a \ { never \||\| always \||\| search \||\| find }]
++[\c
++.BI \-l \ timelimit\fR]
++[\c
++.BI \-z \ sizelimit\fR]
+ [\c
+ .BI \-f \ file\fR]
+ [\c
++.BR \-M [ M ]]
++[\c
+ .BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+@@ -49,21 +61,13 @@ ldapsearch \- LDAP search tool
+ [\c
+ .BI \-p \ ldapport\fR]
+ [\c
+-.BI \-b \ searchbase\fR]
+-[\c
+-.BR \-s \ { base \||\| one \||\| sub \||\| children }]
+-[\c
+-.BR \-a \ { never \||\| always \||\| search \||\| find }]
+-[\c
+ .BR \-P \ { 2 \||\| 3 }]
+ [\c
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
+-.BI \-l \ timelimit\fR]
+-[\c
+-.BI \-z \ sizelimit\fR]
++.BI \-o \ opt \fR[= optparam \fR]]
+ [\c
+ .BI \-O \ security-properties\fR]
+ [\c
+@@ -71,6 +75,8 @@ ldapsearch \- LDAP search tool
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+@@ -107,10 +113,22 @@ The search results are displayed using a
+ Option \fI\-L\fP controls the format of the output.
+ .SH OPTIONS
+ .TP
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapsearch
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.TP
+ .B \-n
+ Show what would be done, but don't actually perform the search.  Useful for
+ debugging in conjunction with \fB\-v\fP.
+ .TP
++.B \-v
++Run in verbose mode, with many diagnostics written to standard output.
++.TP
+ .B \-c
+ Continuous operation mode. Errors are reported, but ldapsearch will continue
+ with searches. The default is to exit after reporting an error.  Only useful
+@@ -120,9 +138,6 @@ in conjunction with \fB\-f\fP.
+ Include the User Friendly Name form of the Distinguished Name (DN)
+ in the output.
+ .TP
+-.B \-v
+-Run in verbose mode, with many diagnostics written to standard output.
+-.TP
+ .BR \-t [ t ]
+ A single \fB\-t\fP writes retrieved non-printable values to a set of temporary
+ files.  This is useful for dealing with values containing non-character
+@@ -150,11 +165,6 @@ A single \fB\-L\fP restricts the output 
+ A third \fB\-L\fP disables printing of the LDIF version.
+ The default is to use an extended version of LDIF.
+ .TP
+-.BR \-M [ M ]
+-Enable manage DSA IT control.
+-.B \-MM
+-makes control critical.
+-.TP
+ .BI \-S \ attribute
+ Sort the entries returned based on \fIattribute\fP. The default is not
+ to sort entries returned.  If \fIattribute\fP is a zero-length string (""),
+@@ -166,10 +176,60 @@ normally prints out entries as it receiv
+ option defeats this behavior, causing all entries to be retrieved,
+ then sorted, then printed.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapsearch
+-must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.BI \-b \ searchbase
++Use \fIsearchbase\fP as the starting point for the search instead of
++the default.
++.TP
++.BR \-s \ { base \||\| one \||\| sub \||\| children }
++Specify the scope of the search to be one of
++.BR base ,
++.BR one ,
++.BR sub ,
++or
++.B children
++to specify a base object, one-level, subtree, or children search.
++The default is
++.BR sub .
++Note:
++.I children
++scope requires LDAPv3 subordinate feature extension.
++.TP
++.BR \-a \ { never \||\| always \||\| search \||\| find }
++Specify how aliases dereferencing is done.  Should be one of
++.BR never ,
++.BR always ,
++.BR search ,
++or
++.B find
++to specify that aliases are never dereferenced, always dereferenced,
++dereferenced when searching, or dereferenced only when locating the
++base object for the search.  The default is to never dereference aliases.
++.TP
++.BI \-l \ timelimit
++wait at most \fItimelimit\fP seconds for a search to complete.
++A timelimit of
++.I 0
++(zero) or
++.I none
++means no limit.
++A timelimit of
++.I max
++means the maximum integer allowable by the protocol.
++A server may impose a maximal timelimit which only
++the root user may override.
++.TP
++.BI \-z \ sizelimit
++retrieve at most \fIsizelimit\fP entries for a search.
++A sizelimit of
++.I 0
++(zero) or
++.I none
++means no limit.
++A sizelimit of
++.I max
++means the maximum integer allowable by the protocol.
++A server may impose a maximal sizelimit which only
++the root user may override.
+ .TP
+ .BI \-f \ file
+ Read a series of lines from \fIfile\fP, performing one LDAP search for
+@@ -185,6 +245,11 @@ If \fIfile\fP is a single
+ will exit when the first non-successful search result is returned,
+ unless \fB\-c\fP is used.
+ .TP
++.BR \-M [ M ]
++Enable manage DSA IT control.
++.B \-MM
++makes control critical.
++.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -221,35 +286,6 @@ Deprecated in favor of \fB\-H\fP.
+ Specify an alternate TCP port where the ldap server is listening.
+ Deprecated in favor of \fB\-H\fP.
+ .TP
+-.BI \-b \ searchbase
+-Use \fIsearchbase\fP as the starting point for the search instead of
+-the default.
+-.TP
+-.BR \-s \ { base \||\| one \||\| sub \||\| children }
+-Specify the scope of the search to be one of
+-.BR base ,
+-.BR one ,
+-.BR sub ,
+-or
+-.B children
+-to specify a base object, one-level, subtree, or children search.
+-The default is
+-.BR sub .
+-Note:
+-.I children
+-scope requires LDAPv3 subordinate feature extension.
+-.TP
+-.BR \-a \ { never \||\| always \||\| search \||\| find }
+-Specify how aliases dereferencing is done.  Should be one of
+-.BR never ,
+-.BR always ,
+-.BR search ,
+-or
+-.B find
+-to specify that aliases are never dereferenced, always dereferenced,
+-dereferenced when searching, or dereferenced only when locating the
+-base object for the search.  The default is to never dereference aliases.
+-.TP
+ .BR \-P \ { 2 \||\| 3 }
+ Specify the LDAP protocol version to use.
+ .TP
+@@ -284,31 +320,14 @@ Search extensions:
+   [!]vlv=<before>/<after>(/<offset>/<count>|:<value>)  (virtual list view)
+ .fi
+ .TP
+-.BI \-l \ timelimit
+-wait at most \fItimelimit\fP seconds for a search to complete.
+-A timelimit of
+-.I 0
+-(zero) or
+-.I none
+-means no limit.
+-A timelimit of
+-.I max
+-means the maximum integer allowable by the protocol.
+-A server may impose a maximal timelimit which only
+-the root user may override.
+-.TP
+-.BI \-z \ sizelimit
+-retrieve at most \fIsizelimit\fP entries for a search.
+-A sizelimit of
+-.I 0
+-(zero) or
+-.I none
+-means no limit.
+-A sizelimit of
+-.I max
+-means the maximum integer allowable by the protocol.
+-A server may impose a maximal sizelimit which only
+-the root user may override.
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
+ .TP
+ .BI \-O \ security-properties
+ Specify SASL security properties.
+@@ -320,6 +339,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.
+diff --git a/doc/man/man1/ldapwhoami.1 b/doc/man/man1/ldapwhoami.1
+--- a/doc/man/man1/ldapwhoami.1
++++ b/doc/man/man1/ldapwhoami.1
+@@ -7,13 +7,15 @@ ldapwhoami \- LDAP who am i? tool
+ .SH SYNOPSIS
+ .B ldapwhoami
+ [\c
++.BR \-V [ V ]]
++[\c
++.BI \-d \ debuglevel\fR]
++[\c
+ .BR \-n ]
+ [\c
+ .BR \-v ]
+ [\c
+-.BR \-z ]
+-[\c
+-.BI \-d \ debuglevel\fR]
++.BR \-x ]
+ [\c
+ .BI \-D \ binddn\fR]
+ [\c
+@@ -33,18 +35,20 @@ ldapwhoami \- LDAP who am i? tool
+ [\c
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]]
+ [\c
++.BI \-o \ opt \fR[= optparam \fR]]
++[\c
+ .BI \-O \ security-properties\fR]
+ [\c
+ .BR \-I ]
+ [\c
+ .BR \-Q ]
+ [\c
++.BR \-N ]
++[\c
+ .BI \-U \ authcid\fR]
+ [\c
+ .BI \-R \ realm\fR]
+ [\c
+-.BR \-x ]
+-[\c
+ .BI \-X \ authzid\fR]
+ [\c
+ .BI \-Y \ mech\fR]
+@@ -59,6 +63,15 @@ opens a connection to an LDAP server, bi
+ operation.  
+ .SH OPTIONS
+ .TP
++.BR \-V [ V ]
++Print version info.
++If \fB\-VV\fP is given, only the version information is printed.
++.TP
++.BI \-d \ debuglevel
++Set the LDAP debugging level to \fIdebuglevel\fP.
++.B ldapwhoami
++must be compiled with LDAP_DEBUG defined for this option to have any effect.
++.TP
+ .B \-n
+ Show what would be done, but don't actually perform the whoami operation.
+ Useful for
+@@ -67,11 +80,6 @@ debugging in conjunction with \fB\-v\fP.
+ .B \-v
+ Run in verbose mode, with many diagnostics written to standard output.
+ .TP
+-.BI \-d \ debuglevel
+-Set the LDAP debugging level to \fIdebuglevel\fP.
+-.B ldapwhoami
+-must be compiled with LDAP_DEBUG defined for this option to have any effect.
+-.TP
+ .B \-x 
+ Use simple authentication instead of SASL.
+ .TP
+@@ -103,9 +111,6 @@ Deprecated in favor of \fB\-H\fP.
+ Specify an alternate TCP port where the ldap server is listening.
+ Deprecated in favor of \fB\-H\fP.
+ .TP
+-.BI \-O \ security-properties
+-Specify SASL security properties.
+-.TP
+ .BR \-e \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+ .TP
+ .BR \-E \ [ ! ] \fIext\fP [ =\fIextparam\fP ]
+@@ -136,6 +141,18 @@ Search extensions:
+           rp[/<cookie>][/<slimit>]     (LDAP Sync refreshAndPersist)
+ .fi
+ .TP
++.BI \-o \ opt \fR[= optparam \fR]
++
++Specify general options.
++
++General options:
++.nf
++  nettimeout=<timeout>  (in seconds, or "none" or "max")
++.fi
++.TP
++.BI \-O \ security-properties
++Specify SASL security properties.
++.TP
+ .B \-I
+ Enable SASL Interactive mode.  Always prompt.  Default is to prompt
+ only as needed.
+@@ -143,6 +160,9 @@ only as needed.
+ .B \-Q
+ Enable SASL Quiet mode.  Never prompt.
+ .TP
++.B \-N
++Do not use reverse DNS to canonicalize SASL host name.
++.TP
+ .BI \-U \ authcid
+ Specify the authentication ID for SASL bind. The form of the ID
+ depends on the actual SASL mechanism used.

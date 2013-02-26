@@ -1,0 +1,29 @@
+slapd segfaults when TLS certificate key is not set or cannot be loaded
+
+Author: Jan Vcelak <jvcelak@redhat.com>
+Upstream ITS: #7135
+Upstream commit: 1107103
+Resolves: #796808
+
+---
+ libraries/libldap/tls_m.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libraries/libldap/tls_m.c b/libraries/libldap/tls_m.c
+index 09348b7..da230c5 100644
+--- a/libraries/libldap/tls_m.c
++++ b/libraries/libldap/tls_m.c
+@@ -2267,8 +2267,8 @@ tlsm_deferred_ctx_init( void *arg )
+ 		}
+ 	} else { /* set up secure server */
+ 		SSLKEAType certKEA;
+-		CERTCertificate *serverCert;
+-		SECKEYPrivateKey *serverKey;
++		CERTCertificate *serverCert = NULL;
++		SECKEYPrivateKey *serverKey = NULL;
+ 		SECStatus status;
+ 
+ 		/* must have a certificate for the server to use */
+-- 
+1.7.4.2
+

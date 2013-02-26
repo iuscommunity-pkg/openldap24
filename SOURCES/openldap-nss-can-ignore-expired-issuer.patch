@@ -1,0 +1,23 @@
+MozNSS: when cert not required, ignore issuer expiration
+    
+When server certificate is not required in a TLS session (e.g.
+TLS_REQCERT is set to 'never'), ignore expired issuer certificate error
+and do not terminate the connection.
+
+Author: Jan Vcelak <jvcelak@redhat.com>
+Upstream ITS: #6998
+Upstream commit: e8ac17e17c831ed44174a22c1cb2a8dc39fcb976
+Resolves: #722959
+
+diff --git a/libraries/libldap/tls_m.c b/libraries/libldap/tls_m.c
+index 32af7ec..7ae7d82 100644
+--- a/libraries/libldap/tls_m.c
++++ b/libraries/libldap/tls_m.c
+@@ -671,6 +671,7 @@ tlsm_bad_cert_handler(void *arg, PRFileDesc *ssl)
+ 	case SEC_ERROR_UNTRUSTED_ISSUER:
+ 	case SEC_ERROR_UNKNOWN_ISSUER:
+ 	case SEC_ERROR_EXPIRED_CERTIFICATE:
++	case SEC_ERROR_EXPIRED_ISSUER_CERTIFICATE:
+ 		if (ctx->tc_verify_cert) {
+ 			success = SECFailure;
+ 		}
